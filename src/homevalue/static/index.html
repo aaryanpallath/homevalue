@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Value</title>
+<style>
+ :root { --ink:#1b1b1b; --muted:#666; --line:#e3e3e3; --bg:#f7f7f5; --card:#fff; --accent:#006aff; }
+ @media (prefers-color-scheme: dark) { :root { --ink:#eee; --muted:#a8a8a8; --line:#333; --bg:#141414; --card:#1d1d1d; } }
+ body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, sans-serif; }
+ main { max-width:760px; margin:0 auto; padding:28px 16px 60px; }
+ input { width:100%; box-sizing:border-box; padding:12px 14px; font-size:16px; border:1px solid var(--line);
+         border-radius:8px; background:var(--card); color:var(--ink); }
+ ul { list-style:none; padding:0; margin:6px 0; } li button { width:100%; text-align:left; padding:8px 12px; border:0;
+   background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); cursor:pointer; font:inherit; }
+ .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; margin-top:16px; }
+ .big { font-size:34px; font-weight:700; } .muted { color:var(--muted); font-size:13px; }
+ table { width:100%; border-collapse:collapse; font-size:14px; } td, th { padding:6px 4px; border-bottom:1px solid var(--line); text-align:left; }
+ .scroll { overflow-x:auto; }
+</style></head><body><main>
+<h1>Home Value</h1>
+<p class="muted">King County, WA single-family homes. Estimates from public assessor sales records; not an appraisal.</p>
+<label for="q">Address</label>
+<input id="q" placeholder="e.g. 1234 NE 65TH ST" autocomplete="off">
+<ul id="hits"></ul>
+<div id="out"></div>
+<script>
+const fmt = n => "$" + Math.round(n).toLocaleString("en-US");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let timer;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(timer);
+  const q = e.target.value.trim();
+  if (q.length < 3) { document.getElementById("hits").innerHTML = ""; return; }
+  timer = setTimeout(async () => {
+    const r = await fetch("/api/search?q=" + encodeURIComponent(q));
+    const hits = r.ok ? await r.json() : [];
+    document.getElementById("hits").innerHTML = hits.map(h =>
+      `<li><button data-pid="${esc(h.pid)}">${esc(h.address)}, ${esc(h.zip)}</button></li>`).join("");
+  }, 200);
+});
+async function show(pid) {
+  document.getElementById("hits").innerHTML = "";
+  const r = await fetch("/api/estimate/" + pid);
+  const d = await r.json();
+  if (!r.ok) { document.getElementById("out").innerHTML = `<div class="card">${esc(d.detail)}</div>`; return; }
+  const f = d.facts;
+  document.getElementById("out").innerHTML = `
+    <div class="card"><div class="muted">${esc(d.address)}, ${esc(d.zip)}</div>
+      <div class="big">${fmt(d.estimate)}</div>
+      <div>80% range: ${fmt(d.range_80[0])} – ${fmt(d.range_80[1])}</div>
+      <div class="muted">${f.living_sqft.toLocaleString()} sq ft · ${f.bedrooms ?? "?"} bd · ${f.baths ?? "?"} ba ·
+        built ${f.year_built ?? "?"} · grade ${f.grade ?? "?"} · as of ${esc(d.as_of)}</div></div>
+    <div class="card"><b>Recent similar sales nearby</b><div class="scroll"><table>
+      <tr><th>Address</th><th>Sold</th><th>Price</th><th>Sq ft</th><th>$/sq ft</th></tr>
+      ${d.comparable_sales.map(c => `<tr><td>${esc(c.address)}</td><td>${esc(c.date)}</td><td>${fmt(c.price)}</td>
+        <td>${c.living_sqft.toLocaleString()}</td><td>$${c.price_per_sqft}</td></tr>`).join("") ||
+        "<tr><td colspan=5>No similar sales in the last year</td></tr>"}
+    </table></div><p class="muted">${esc(d.note)}</p></div>`;
+  history.replaceState(null, "", "?pid=" + encodeURIComponent(pid));  // a shareable link to this home
+}
+document.getElementById("hits").addEventListener("click", e => { if (e.target.dataset.pid) show(e.target.dataset.pid); });
+const linked = new URLSearchParams(location.search).get("pid");
+if (linked) show(linked);
+</script></main></body></html>

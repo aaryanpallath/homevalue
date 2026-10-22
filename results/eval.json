@@ -1,0 +1,116 @@
+{
+  "data": {
+    "sales": 114071,
+    "train": [
+      "2019-02-01",
+      "2025-09-30",
+      102287
+    ],
+    "calibration": [
+      "2025-10-01",
+      "2026-03-31",
+      4955
+    ],
+    "test": [
+      "2026-04-01",
+      "2026-09-30",
+      6829
+    ]
+  },
+  "models": {
+    "comps ($/sqft of recent neighborhood sales)": {
+      "median_abs_pct_error": 14.43,
+      "within_5pct": 19.1,
+      "within_10pct": 36.4,
+      "within_20pct": 64.4
+    },
+    "hedonic regression": {
+      "median_abs_pct_error": 9.35,
+      "within_5pct": 28.7,
+      "within_10pct": 53.1,
+      "within_20pct": 81.3
+    },
+    "gradient boosting": {
+      "median_abs_pct_error": 7.46,
+      "within_5pct": 35.4,
+      "within_10pct": 61.4,
+      "within_20pct": 87.9
+    }
+  },
+  "boosting_minus_hedonic_median_error_ci95": [
+    -2.13,
+    -1.61
+  ],
+  "boosting_by_price_quarter": {
+    "lowest quarter": {
+      "median_abs_pct_error": 6.27,
+      "within_5pct": 41.5,
+      "within_10pct": 66.8,
+      "within_20pct": 89.1
+    },
+    "second": {
+      "median_abs_pct_error": 7.03,
+      "within_5pct": 36.3,
+      "within_10pct": 64.8,
+      "within_20pct": 90.7
+    },
+    "third": {
+      "median_abs_pct_error": 8.15,
+      "within_5pct": 31.9,
+      "within_10pct": 58.6,
+      "within_20pct": 87.4
+    },
+    "highest quarter": {
+      "median_abs_pct_error": 8.93,
+      "within_5pct": 31.7,
+      "within_10pct": 55.4,
+      "within_20pct": 84.4
+    }
+  },
+  "price_ranges": {
+    "one width for every home": {
+      "0.8": {
+        "overall": 0.765,
+        "median_range_half_width_pct": 14.3,
+        "by_price_quarter": {
+          "lowest quarter": 0.815,
+          "second": 0.799,
+          "third": 0.752,
+          "highest quarter": 0.693
+        }
+      },
+      "0.9": {
+        "overall": 0.873,
+        "median_range_half_width_pct": 19.6,
+        "by_price_quarter": {
+          "lowest quarter": 0.901,
+          "second": 0.909,
+          "third": 0.865,
+          "highest quarter": 0.816
+        }
+      }
+    },
+    "width per predicted-price band": {
+      "0.8": {
+        "overall": 0.765,
+        "median_range_half_width_pct": 16.3,
+        "by_price_quarter": {
+          "lowest quarter": 0.745,
+          "second": 0.774,
+          "third": 0.795,
+          "highest quarter": 0.748
+        }
+      },
+      "0.9": {
+        "overall": 0.879,
+        "median_range_half_width_pct": 21.9,
+        "by_price_quarter": {
+          "lowest quarter": 0.857,
+          "second": 0.907,
+          "third": 0.895,
+          "highest quarter": 0.858
+        }
+      }
+    }
+  }
+}
